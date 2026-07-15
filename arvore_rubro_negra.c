@@ -8,7 +8,7 @@ typedef enum { RBT_RED, RBT_BLACK } NodeColor;
 
 typedef struct Node {
     int data;
-    NodeColor color; // Propriedade unificada como 'color'
+    NodeColor color;
     struct Node *left, *right, *parent;
 } Node;
 
@@ -57,27 +57,23 @@ void rotateRight(Node **root, Node *y) {
 void fixUp(Node **root, Node *z) {
     while (z != *root && z->parent->color == RBT_RED) {
         if (z->parent == z->parent->parent->left) {
-            Node *y = z->parent->parent->right; // Tio de z
+            Node *y = z->parent->parent->right; 
             
-            // Caso 1: O tio é Vermelho
             if (y != NULL && y->color == RBT_RED) {
                 z->parent->color = RBT_BLACK;
                 y->color = RBT_BLACK;
                 z->parent->parent->color = RBT_RED;
                 z = z->parent->parent;
             } else {
-                // Caso 2: O tio é Preto e z é um filho à direita
                 if (z == z->parent->right) {
                     z = z->parent;
                     rotateLeft(root, z);
                 }
-                // Caso 3: O tio é Preto e z é um filho à esquerda
                 z->parent->color = RBT_BLACK;
                 z->parent->parent->color = RBT_RED;
                 rotateRight(root, z->parent->parent);
             }
         } else {
-            // Espelho do bloco acima (quando o pai de z é filho à direita)
             Node *y = z->parent->parent->left;
             
             if (y != NULL && y->color == RBT_RED) {
@@ -96,19 +92,19 @@ void fixUp(Node **root, Node *z) {
             }
         }
     }
-    (*root)->color = RBT_BLACK; // A raiz sempre deve ser preta
+    (*root)->color = RBT_BLACK;
 }
 
 void insert(Node **root, int data) {
     Node *z = (Node*)malloc(sizeof(Node));
     z->data = data;
     z->left = z->right = z->parent = NULL;
-    z->color = RBT_RED; // Sempre inserido como vermelho
+    z->color = RBT_RED;
     
     Node *y = NULL;
     Node *x = *root;
     
-    // Caminha na árvore para achar a posição de inserção
+
     while (x != NULL) {
         y = x;
         if (z->data < x->data)
@@ -125,7 +121,6 @@ void insert(Node **root, int data) {
     else
         y->right = z;
         
-    // Corrige as propriedades da árvore
     fixUp(root, z);
 }
 
@@ -158,9 +153,8 @@ void destroyTree(Node *root) {
 void deleteFixUp(Node **root, Node *x, Node *xParent) {
     while (x != *root && (x == NULL || x->color == RBT_BLACK)) {
         if (x == xParent->left) {
-            Node *w = xParent->right; // Irmão de x
+            Node *w = xParent->right;
             
-            // Caso 1: O irmão w é Vermelho
             if (w->color == RBT_RED) {
                 w->color = RBT_BLACK;
                 xParent->color = RBT_RED;
@@ -168,21 +162,18 @@ void deleteFixUp(Node **root, Node *x, Node *xParent) {
                 w = xParent->right;
             }
             
-            // Caso 2: O irmão w é Preto e ambos os filhos de w são Pretos
             if ((w->left == NULL || w->left->color == RBT_BLACK) &&
                 (w->right == NULL || w->right->color == RBT_BLACK)) {
                 w->color = RBT_RED;
                 x = xParent;
                 xParent = x->parent;
             } else {
-                // Caso 3: O irmão w é Preto, filho esquerdo de w é Vermelho e o direito é Preto
                 if (w->right == NULL || w->right->color == RBT_BLACK) {
                     if (w->left != NULL) w->left->color = RBT_BLACK;
                     w->color = RBT_RED;
                     rotateRight(root, w);
                     w = xParent->right;
                 }
-                // Caso 4: O irmão w é Preto e o filho direito de w é Vermelho
                 w->color = xParent->color;
                 xParent->color = RBT_BLACK;
                 if (w->right != NULL) w->right->color = RBT_BLACK;
@@ -191,7 +182,6 @@ void deleteFixUp(Node **root, Node *x, Node *xParent) {
                 break;
             }
         } else {
-            // Espelho do bloco acima (quando x é o filho direito)
             Node *w = xParent->left;
             
             if (w->color == RBT_RED) {
@@ -225,7 +215,6 @@ void deleteFixUp(Node **root, Node *x, Node *xParent) {
     if (x != NULL) x->color = RBT_BLACK;
 }
 
-// Função auxiliar para encontrar o menor nó de uma subárvore
 Node* minimum(Node *node) {
     while (node->left != NULL)
         node = node->left;
@@ -241,14 +230,13 @@ void deleteNode(Node **root, int key) {
     }
 
     Node *y = z;
-    NodeColor y_original_color = y->color; // Ajustado de Color para NodeColor
+    NodeColor y_original_color = y->color; 
     Node *x;
     Node *xParent;
 
     if (z->left == NULL) {
         x = z->right;
         xParent = z->parent;
-        // Substituir z por x (transplante simples)
         if (z->parent == NULL) {
             *root = x;
         } else if (z == z->parent->left) {
@@ -271,23 +259,20 @@ void deleteNode(Node **root, int key) {
         if (x != NULL) x->parent = z->parent;
     } 
     else {
-        // Nó com dois filhos: acha o sucessor (mínimo da subárvore direita)
         y = minimum(z->right);
         y_original_color = y->color;
         x = y->right;
         
         if (y->parent == z) {
-            xParent = y; // Se o sucessor for filho direto de z
+            xParent = y;
         } else {
             xParent = y->parent;
-            // Desconecta y de sua posição original
             if (x != NULL) x->parent = y->parent;
             y->parent->left = x;
             y->right = z->right;
             y->right->parent = y;
         }
         
-        // Substitui z por y na estrutura da árvore
         if (z->parent == NULL) {
             *root = y;
         } else if (z == z->parent->left) {
@@ -303,7 +288,6 @@ void deleteNode(Node **root, int key) {
 
     free(z);
 
-    // Se a cor do nó removido/deslocado era preta, precisamos corrigir
     if (y_original_color == RBT_BLACK) {
         deleteFixUp(root, x, xParent);
     }
@@ -341,8 +325,8 @@ void DrawTree(Node *root, int x, int y, int hSpacing, int vSpacing) {
 }
 
 int main() {
-    // Inicialização da janela gráfica (Largura: 1000, Altura: 600)
-    InitWindow(1000, 600, "Demonstrador de Arvore Rubro-Negra");
+    // Inicialização da janela gráfica (Largura: 1600, Altura: 900)
+    InitWindow(1600, 900, "Demonstrador de Arvore Rubro-Negra");
     SetTargetFPS(60);
 
     Node *root = NULL;
@@ -399,25 +383,25 @@ int main() {
         ClearBackground(RAYWHITE);
 
         // Painel de instruções superior esquerdo
-        DrawRectangle(10, 10, 360, 140, Fade(SKYBLUE, 0.3f));
-        DrawRectangleLines(10, 10, 360, 140, BLUE);
-        DrawText("CONTROLES:", 20, 20, 16, DARKBLUE);
-        DrawText("- Digite um numero e aperte ENTER para Inserir", 20, 45, 14, BLACK);
-        DrawText("- Digite um numero e aperte DEL para Remover", 20, 65, 14, BLACK);
-        DrawText("- Use Backspace para corrigir o texto", 20, 85, 14, BLACK);
+        DrawRectangle(10, 10, 500, 200, Fade(SKYBLUE, 0.3f));
+        DrawRectangleLines(10, 10, 500, 200, BLUE);
+        DrawText("CONTROLES:", 20, 20, 30, DARKBLUE);
+        DrawText("Digite um numero e aperte ENTER para Inserir", 20, 60, 20, BLACK);
+        DrawText("Digite um numero e aperte DEL para Remover", 20, 90, 20, BLACK);
+        DrawText("Use Backspace para corrigir o texto", 20, 120, 20, BLACK);
         
         // Caixa de texto de Input
-        DrawText("Valor atual: ", 20, 115, 16, BLACK);
-        DrawRectangle(120, 110, 80, 25, LIGHTGRAY);
-        DrawRectangleLines(120, 110, 80, 25, DARKGRAY);
-        DrawText(inputBuffer, 125, 115, 16, RED);
+        DrawText("Valor atual: ", 20, 150, 20, BLACK);
+        DrawRectangle(150, 150, 150, 25, LIGHTGRAY);
+        DrawRectangleLines(150, 150, 150, 25, DARKGRAY);
+        DrawText(inputBuffer, 160, 155, 20, RED);
 
         // Se a árvore estiver vazia, avisa o usuário
         if (root == NULL) {
-            DrawText("A arvore esta vazia!", 400, 300, 20, DARKGRAY);
+            DrawText("A arvore esta vazia!", 500, 200, 20, DARKGRAY);
         } else {
             // Desenha a árvore de forma recursiva a partir do topo central
-            DrawTree(root, 500, 100, 180, 80);
+            DrawTree(root, 700, 250, 300, 80);
         }
 
         EndDrawing();
