@@ -4,12 +4,12 @@
 #include <raylib.h>
 
 // --- ESTRUTURA DA ÁRVORE ---
-typedef enum { VERMELHO, PRETO } Cor_Do_No;
+typedef enum { VERMELHO, PRETO } Cor_Do_No; // Enumeração para representar a cor do nó 
 
 typedef struct No {
     int chave;
-    Cor_Do_No cor;
-    struct No *esquerda, *direita, *pai;
+    Cor_Do_No cor; // Aplica a cor do nó (VERMELHO ou PRETO)
+    struct No *esquerda, *direita, *pai; // Ponteiros para os filhos esquerdo e direito e o pai do nó
 } No;
 
 // --- ROTAÇÕES ---
@@ -96,22 +96,25 @@ void correcaoInsercao(No **raiz, No *z) {
 }
 
 void insercao(No **raiz, int chave) {
-    No *z = (No*)malloc(sizeof(No));
-    z->chave = chave;
-    z->esquerda = z->direita = z->pai = NULL;
-    z->cor = VERMELHO;
-    
     No *y = NULL;
     No *x = *raiz;
-    
 
     while (x != NULL) {
+        if (chave == x->chave) {   
+            return;
+        }
+
         y = x;
-        if (z->chave < x->chave)
+        if (chave < x->chave)
             x = x->esquerda;
         else
             x = x->direita;
     }
+
+    No *z = (No*)malloc(sizeof(No));
+    z->chave = chave;
+    z->esquerda = z->direita = z->pai = NULL;
+    z->cor = VERMELHO;
     
     z->pai = y;
     if (y == NULL)
@@ -309,11 +312,11 @@ void DrawTree(No *raiz, int x, int y, int hSpacing, int vSpacing) {
     // 1. Desenha as linhas primeiro para que fiquem por baixo dos círculos
     if (raiz->esquerda != NULL) {
         DrawLine(x, y, x - hSpacing, y + vSpacing, GRAY);
-        DrawTree(raiz->esquerda, x - hSpacing, y + vSpacing, hSpacing / 1.8, vSpacing);
+        DrawTree(raiz->esquerda, x - hSpacing, y + vSpacing, hSpacing / 1.5, vSpacing);
     }
     if (raiz->direita != NULL) {
         DrawLine(x, y, x + hSpacing, y + vSpacing, GRAY);
-        DrawTree(raiz->direita, x + hSpacing, y + vSpacing, hSpacing / 1.8, vSpacing);
+        DrawTree(raiz->direita, x + hSpacing, y + vSpacing, hSpacing / 1.5, vSpacing);
     }
 
     // 2. Determina a cor do nó (Mapeando Cor_Do_No para cor da Raylib)
@@ -321,10 +324,10 @@ void DrawTree(No *raiz, int x, int y, int hSpacing, int vSpacing) {
     Color border = (raiz->cor == VERMELHO) ? MAROON : DARKGRAY;
 
     // --- DESTAQUE DA BUSCA ---
-    // Se este nó for o procurado, desenhamos uma auréola amarela ao redor dele
+    // Se este nó for o procurado, desenhamos um circulo amarelo ao redor dele
     if (raiz == buscarNo) {
         DrawCircle(x, y, 28, YELLOW); // Círculo de destaque maior por trás
-        border = GOLD;               // Altera a cor da borda do próprio nó para dourado
+        border = GOLD;             
     }
 
     // 3. Desenha o círculo do nó e a borda
@@ -340,7 +343,7 @@ void DrawTree(No *raiz, int x, int y, int hSpacing, int vSpacing) {
 
 int main() {
     // Inicialização da janela gráfica (Largura: 1600, Altura: 900)
-    InitWindow(1600, 900, "Demonstrador de Arvore Rubro-Negra");
+    InitWindow(1920, 1080, "Demonstrador de Arvore Rubro-Negra");
     SetTargetFPS(60);
 
     No *raiz = NULL;
@@ -348,8 +351,8 @@ int main() {
     int letterCount = 0;
 
     // Variável para exibir mensagem de status da busca (ex: "Nó encontrado!" ou "Não encontrado")
-    char buscarStatus[32] = "\0"; 
-    Color statusColor = GRAY;
+    char resultadoBuscar[32] = "\0"; 
+    Color Cor_resposta = GRAY;
 
 
     while (!WindowShouldClose()) {
@@ -394,11 +397,11 @@ int main() {
             buscarNo = buscar(raiz, value);
             
             if (buscarNo != NULL) {
-                sprintf(buscarStatus, "Nó encontrado!");
-                statusColor = GREEN;
+                sprintf(resultadoBuscar, "Nó encontrado!");
+                Cor_resposta = GREEN;
             } else {
-                sprintf(buscarStatus, "Nó não encontrado!");
-                statusColor = RED;
+                sprintf(resultadoBuscar, "Nó não encontrado!");
+                Cor_resposta = RED;
             }
             
             inputBuffer[0] = '\0';
@@ -425,16 +428,16 @@ int main() {
         DrawText(inputBuffer, 160, 184, 20, RED);
 
         // Status da Busca
-        if (buscarStatus[0] != '\0') {
-            DrawText(buscarStatus, 290, 184, 19, statusColor);
+        if (resultadoBuscar[0] != '\0') {
+            DrawText(resultadoBuscar, 290, 184, 19, Cor_resposta);
         }
 
         // Se a árvore estiver vazia, avisa o usuário
         if (raiz == NULL) {
-            DrawText("A arvore esta vazia!", 700, 230, 20, DARKGRAY);
+            DrawText("A arvore esta vazia!", 900, 150, 25, DARKGRAY);
         } else {
             // Desenha a árvore de forma recursiva a partir do topo central
-            DrawTree(raiz, 700, 250, 300, 80);
+            DrawTree(raiz, 850, 200, 300, 80);
         }
 
         EndDrawing();
