@@ -103,8 +103,8 @@ void insercao(No **raiz, int chave) {
         if (chave == x->chave) {   
             return;
         }
-
         y = x;
+
         if (chave < x->chave)
             x = x->esquerda;
         else
@@ -113,10 +113,10 @@ void insercao(No **raiz, int chave) {
 
     No *z = (No*)malloc(sizeof(No));
     z->chave = chave;
-    z->esquerda = z->direita = z->pai = NULL;
+    z->esquerda = z->direita = NULL;
+    z->pai = y;
     z->cor = VERMELHO;
     
-    z->pai = y;
     if (y == NULL)
         *raiz = z;
     else if (z->chave < y->chave)
@@ -127,23 +127,16 @@ void insercao(No **raiz, int chave) {
     correcaoInsercao(raiz, z);
 }
 
-void inorder(No *raiz) {
-    if (raiz == NULL) return;
-    inorder(raiz->esquerda);
-    printf("%d(%s) ", raiz->chave, raiz->cor == VERMELHO ? "V" : "P");
-    inorder(raiz->direita);
-}
-
 No *buscarNo = NULL;
 
-No* buscar(No *raiz, int key) {
-    if (raiz == NULL || raiz->chave == key)
+No* buscar(No *raiz, int chave) {
+    if (raiz == NULL || raiz->chave == chave)
         return raiz;
     
-    if (key < raiz->chave)
-        return buscar(raiz->esquerda, key);
+    if (chave < raiz->chave)
+        return buscar(raiz->esquerda, chave);
         
-    return buscar(raiz->direita, key);
+    return buscar(raiz->direita, chave);
 }
 
 void destruirArvore(No *raiz) {
@@ -227,10 +220,10 @@ No* minimo(No *No) {
 }
 
 // --- REMOÇÃO ---
-void removerNo(No **raiz, int key) {
-    No *z = buscar(*raiz, key);
+void removerNo(No **raiz, int chave) {
+    No *z = buscar(*raiz, chave);
     if (z == NULL) {
-        printf("Elemento %d nao encontrado.\n", key);
+        printf("Elemento %d nao encontrado.\n", chave);
         return;
     }
 
@@ -408,28 +401,39 @@ int main() {
             letterCount = 0;
         }
 
+        // TECLA C: Destruir a árvore
+        if (IsKeyPressed(KEY_C)) {
+            destruirArvore(raiz);
+            raiz = NULL;
+            buscarNo = NULL;
+            resultadoBuscar[0] = '\0';
+            inputBuffer[0] = '\0';
+            letterCount = 0;
+        }
+
         // --- 2. DESENHO NA TELA (RULER & RENDER) ---
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
         // Painel de instruções superior esquerdo
-        DrawRectangle(10, 10, 500, 200, Fade(SKYBLUE, 0.3f));
-        DrawRectangleLines(10, 10, 500, 200, BLUE);
+        DrawRectangle(10, 10, 500, 240, Fade(SKYBLUE, 0.3f));
+        DrawRectangleLines(10, 10, 500, 240, BLUE);
         DrawText("CONTROLES:", 20, 20, 30, DARKBLUE);
         DrawText("Digite um numero e aperte ENTER para Inserir", 20, 60, 20, BLACK);
         DrawText("Digite um numero e aperte DEL para Remover", 20, 90, 20, BLACK);
         DrawText("Digite um numero e aperte F para Buscar", 20, 120, 20, BLACK);
-        DrawText("Use Backspace para corrigir o texto", 20, 150, 20, BLACK);
+        DrawText("Digite C para destruir a arvore", 20, 150, 20, BLACK);
+        DrawText("Use Backspace para corrigir o texto", 20, 180, 20, BLACK);
         
         // Caixa de texto de Input
-        DrawText("Valor atual: ", 20, 180, 20, BLACK);
-        DrawRectangle(150, 180, 130, 25, LIGHTGRAY);
-        DrawRectangleLines(150, 180, 130, 25, DARKGRAY);
-        DrawText(inputBuffer, 160, 184, 20, RED);
+        DrawText("Valor atual: ", 20, 210, 20, BLACK);
+        DrawRectangle(150, 210, 130, 25, LIGHTGRAY);
+        DrawRectangleLines(150, 210, 130, 25, DARKGRAY);
+        DrawText(inputBuffer, 160, 214, 20, RED);
 
         // Status da Busca
         if (resultadoBuscar[0] != '\0') {
-            DrawText(resultadoBuscar, 290, 184, 19, Cor_resposta);
+            DrawText(resultadoBuscar, 290, 214, 19, Cor_resposta);
         }
 
         // Se a árvore estiver vazia, avisa o usuário
